@@ -1,7 +1,69 @@
-venv/
-.venv/
+# =========================
+# Python artifacts
+# =========================
 __pycache__/
-dist/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
 build/
-*.csv
-*.xlsx
+dist/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# =========================
+# Logs & reports
+# =========================
+*.log
+out/
+reports/
+
+# =========================
+# Test / example outputs
+# =========================
+cleaned_*.csv
+cleaned_*.xlsx
+report_*.xlsx
+
+# =========================
+# OS / Editor junk
+# =========================
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Pytest
+# =========================
+.pytest_cache/
+
+# =========================
+# Coverage
+# =========================
+.coverage
+htmlcov/
+
+# =========================
+# Packaging
+# =========================
+*.spec
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.swp
+*.bak
