@@ -1,5 +1,6 @@
 # cleaner/rules.py
 from __future__ import annotations
+import phonenumbers
 from dateutil import parser as date_parser
 
 import re
@@ -12,6 +13,11 @@ _EMPTY_LIKE = {"", "n/a", "na", "null", "none", "-", "--"}
 
 def _find_email_columns(df: pd.DataFrame) -> list:
     return [c for c in df.columns if "email" in str(c).strip().lower()]
+
+
+def _find_phone_columns(df: pd.DataFrame) -> list:
+    # catches: Phone, Phone 1, Phone 2, phone_number, etc.
+    return [c for c in df.columns if "phone" in str(c).strip().lower()]
 
 
 def _is_text_series(s: pd.Series) -> bool:
@@ -131,6 +137,53 @@ def normalize_dates(df: pd.DataFrame) -> tuple[pd.DataFrame, int, list[Issue]]:
             except Exception:
                 new_vals.append(raw)  # keep original
                 issues.append(Issue(row=int(idx), column=str(col), issue="unparseable_date", value=raw))
+
+        df[col] = pd.Series(new_vals, index=df.index, dtype="string")
+
+    return df, int(changed), issues
+
+
+def normalize_phones(df: pd.DataFrame, region: str = "CA") -> tuple[pd.DataFrame, int, list[Issue]]:
+    """
+    Normalize phone-like columns using phonenumbers.
+    - Formats valid numbers to E.164 (e.g., +15145551000)
+    - Flags invalid/unparseable numbers as issues
+    - Leaves blanks as NA
+    """
+    df = df.copy()
+    issues: list[Issue] = []
+    changed = 0
+
+    phone_cols = _find_phone_columns(df)
+
+    for col in phone_cols:
+        s = df[col].astype("string")
+
+        new_vals = []
+        for idx, val in s.items():
+            if val is pd.NA or val is None:
+                new_vals.append(pd.NA)
+                continue
+
+            raw = str(val).strip()
+            if raw == "":
+                new_vals.append(pd.NA)
+                continue
+
+            # keep extensions etc. “as-is” if parsing fails, but flag it
+            try:
+                num = phonenumbers.parse(raw, region)
+                if phonenumbers.is_valid_number(num):
+                    formatted = phonenumbers.format_number(num, phonenumbers.PhoneNumberFormat.E164)
+                    new_vals.append(formatted)
+                    if formatted != raw:
+                        changed += 1
+                else:
+                    new_vals.append(raw)
+                    issues.append(Issue(row=int(idx), column=str(col), issue="invalid_phone", value=raw))
+            except Exception:
+                new_vals.append(raw)
+                issues.append(Issue(row=int(idx), column=str(col), issue="invalid_phone", value=raw))
 
         df[col] = pd.Series(new_vals, index=df.index, dtype="string")
 

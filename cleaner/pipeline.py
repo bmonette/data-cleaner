@@ -10,6 +10,7 @@ from cleaner.rules import (
     normalize_emails,
     validate_emails,
     normalize_dates,
+    normalize_phones,
 )
 
 from cleaner.report import Report, Issue
@@ -37,6 +38,15 @@ def run_pipeline(df: pd.DataFrame, toggles: dict, inspection: dict, source_meta:
         df, changed, date_issues = normalize_dates(df)
         report.summary["dates_normalized"] = changed
         report.issues.extend(date_issues)
+
+    if toggles.get("normalize_phones"):
+        df, changed, phone_issues = normalize_phones(
+            df,
+            region=str(toggles.get("phone_region") or "CA"),
+        )
+        report.summary["phones_normalized"] = changed
+        report.issues.extend(phone_issues)
+
 
     if toggles.get("validate_emails"):
         issues = validate_emails(df)

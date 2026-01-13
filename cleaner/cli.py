@@ -24,6 +24,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--normalize-emails", action="store_true", help="Lowercase + trim emails")
     p.add_argument("--normalize-dates", action="store_true", help="Parse dates to YYYY-MM-DD where possible")
     p.add_argument("--validate-emails", action="store_true", help="Flag invalid email formats")
+    p.add_argument("--normalize-phones", action="store_true", help="Normalize + validate phone numbers")
+    p.add_argument("--phone-region", default="CA", help="Default region for phone parsing (e.g., CA, US)")
 
     return p
 
@@ -44,6 +46,8 @@ def main(argv: list[str] | None = None) -> int:
             "normalize_emails": args.normalize_emails,
             "normalize_dates": args.normalize_dates,
             "validate_emails": args.validate_emails,
+            "normalize_phones": args.normalize_phones,
+            "phone_region": args.phone_region,
         },
         inspection=inspection,
         source_meta=meta,
