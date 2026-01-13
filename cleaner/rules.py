@@ -46,11 +46,46 @@ def normalize_empty_values(df: pd.DataFrame) -> pd.DataFrame:
 
 def dedupe_rows(df: pd.DataFrame, key_cols: list[str] | None) -> tuple[pd.DataFrame, int]:
     before = len(df)
-    if key_cols:
-        out = df.drop_duplicates(subset=key_cols, keep="first")
-    else:
+
+    # No key columns: exact row dedupe
+    if not key_cols:
         out = df.drop_duplicates(keep="first")
+        removed = before - len(out)
+        return out, int(removed)
+
+    df = df.copy()
+
+    # Temporary normalized key frame used ONLY for dedupe comparison
+    key_frame = pd.DataFrame(index=df.index)
+
+    for col in key_cols:
+        if col not in df.columns:
+            continue
+
+        s = df[col]
+
+        # Normalize strings for consistent comparisons
+        if _is_text_series(s) or pd.api.types.is_string_dtype(s):
+            norm = s.astype("string").str.strip()
+        else:
+            norm = s
+
+        # Special case: email keys should be case-insensitive
+        if "email" in str(col).strip().lower():
+            norm = norm.astype("string").str.lower()
+
+        key_frame[col] = norm
+
+    # If none of the key columns existed, fall back to exact dedupe
+    if key_frame.shape[1] == 0:
+        out = df.drop_duplicates(keep="first")
+        removed = before - len(out)
+        return out, int(removed)
+
+    mask = ~key_frame.duplicated(keep="first")
+    out = df.loc[mask]
     removed = before - len(out)
+
     return out, int(removed)
 
 

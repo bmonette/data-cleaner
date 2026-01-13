@@ -9,18 +9,18 @@ def _make_df():
         {
             "Email": [
                 " JOHN.DOE@Example.com ",
-                "john.doe@example.com",
-                "alice.johnson@example",          # invalid
+                "john.doe@example.com",           # duplicate of first (after normalization)
+                "alice.johnson@example",          # invalid email (and NOT a duplicate)
             ],
             "Subscription Date": [
                 "01/02/2024",                     # parseable
                 "2024-02-01",                      # already ISO
-                "32/13/2024",                      # impossible
+                "32/13/2024",                      # impossible -> unparseable_date
             ],
             "Phone 1": [
                 "514-555-1000",                    # valid CA
-                "000-000-0000",                    # invalid
-                "",                                # blank
+                "514-555-1000",                    # same as first (duplicate row will get removed anyway)
+                "000-000-0000",                    # invalid CA (this row will remain)
             ],
         }
     )
