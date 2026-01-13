@@ -8,7 +8,7 @@ import pandas as pd
 def load_table(path: Path) -> tuple[pd.DataFrame, dict]:
     ext = path.suffix.lower()
     if ext == ".csv":
-        df = pd.read_csv(path)
+        df = pd.read_csv(path, engine="python", on_bad_lines="skip")
     elif ext in (".xlsx", ".xls"):
         df = pd.read_excel(path, engine="openpyxl")
         ext = ".xlsx"

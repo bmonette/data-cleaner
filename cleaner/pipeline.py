@@ -9,7 +9,9 @@ from cleaner.rules import (
     dedupe_rows,
     normalize_emails,
     validate_emails,
+    normalize_dates,
 )
+
 from cleaner.report import Report, Issue
 
 
@@ -30,6 +32,11 @@ def run_pipeline(df: pd.DataFrame, toggles: dict, inspection: dict, source_meta:
     if toggles.get("normalize_emails"):
         df, changed = normalize_emails(df)
         report.summary["emails_normalized"] = changed
+
+    if toggles.get("normalize_dates"):
+        df, changed, date_issues = normalize_dates(df)
+        report.summary["dates_normalized"] = changed
+        report.issues.extend(date_issues)
 
     if toggles.get("validate_emails"):
         issues = validate_emails(df)
